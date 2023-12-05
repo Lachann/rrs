@@ -1,0 +1,17 @@
+FROM golang:1.18 AS builder
+
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY pkg/server/server.go ./
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o redirect-server .
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/redirect-server .
+EXPOSE 8080
+ENV HOST=:8080
+ENV RICKROLL=https://www.youtube.com/watch?v=dQw4w9WgXcQ
+ENV PREVIEWS=Discord,Slack
+ENTRYPOINT ["./redirect-server"]

@@ -1,0 +1,49 @@
+namespace: rrs
+
+redirect-server:
+  defines: runnable
+  metadata:
+    name: redirect-server
+    description: >-
+      A simple redirect server that pranks users by redirecting traffic to a
+      rickroll, except when requests come from Discord/Slack previews.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    redirect-server:
+      image: env-2143.registry.local/redirect-server:nod-e3d88e2
+      build: .
+      dockerfile: Dockerfile.redirect-server
+  services:
+    http-server-port:
+      description: HTTP port for incoming web requests
+      container: redirect-server
+      port: $host
+      host-port: $host
+      publish: true
+      protocol: tcp
+  connections: {}
+  variables:
+    host:
+      env: HOST
+      type: string
+      value: 0.0.0.0:8080
+      description: >-
+        The host and port where the redirect server listens for incoming
+        requests.
+    rickroll:
+      env: RICKROLL
+      type: string
+      value: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+      description: The URL to redirect users to as part of the prank.
+    previews:
+      env: PREVIEWS
+      type: string
+      value: Discord,Slack
+      description: >-
+        Comma-separated list of user-agents to not redirect (e.g., Discord/Slack
+        previews).
+
+stack:
+  defines: group
+  members:
+    - rrs/redirect-server
