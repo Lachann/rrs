@@ -1,0 +1,47 @@
+namespace: rrs
+
+redirect-server:
+  defines: runnable
+  metadata:
+    name: redirect-server
+    description: >-
+      A Go-based server that redirects traffic to a rickroll, with exceptions
+      for Discord/Slack previews.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    redirect-server:
+      image: env-3702.registry.local/redirect-server:master-c6c9666
+      build: .
+      dockerfile: ./Dockerfile
+  services:
+    http-server-port:
+      description: HTTP server port
+      container: redirect-server
+      port: $host
+      host-port: $host
+      publish: true
+      protocol: tcp
+  connections: {}
+  variables:
+    host:
+      env: HOST
+      type: string
+      value: 8080
+      description: The host and port on which the server runs
+    rickroll-url:
+      env: RICKROLL_URL
+      type: string
+      value: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+      description: The URL to which traffic is redirected
+    preview-user-agents:
+      env: PREVIEW_USER_AGENTS
+      type: string
+      value: Slackbot,Discordbot
+      description: >-
+        Comma-separated list of user agents for which the server behaves
+        differently
+
+stack:
+  defines: group
+  members:
+    - rrs/redirect-server
