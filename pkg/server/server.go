@@ -41,5 +41,11 @@ func Start(host, rickroll string, previews []string) error {
 		}
 	})
 
-	return http.ListenAndServe(host, router)
+	fmt.Printf("Starting server on %s\n", host)
+	if err := http.ListenAndServe(host, router); err != nil {
+		fmt.Printf("Error starting server: %s\n", err)
+		return err
+	}
+	fmt.Printf("Server stopped\n")
+	return nil
 }
