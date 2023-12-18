@@ -1,0 +1,40 @@
+namespace: rrs
+
+redirect-server:
+  defines: runnable
+  metadata:
+    name: redirect-server
+    description: >-
+      A simple redirect server that handles HTTP requests and performs
+      redirection based on the user agent.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    redirect-server:
+      image: env-4012.registry.local/redirect-server:master-c6c9666
+      build: .
+      dockerfile: Dockerfile
+  services:
+    http-server-port:
+      description: HTTP server listening port
+      container: redirect-server
+      port: 8080
+      host-port: 8080
+      publish: true
+      protocol: tcp
+  connections: {}
+  variables:
+    host:
+      env: HOST
+      type: string
+      value: ':8080'
+      description: The host address where the server will be listening
+    rickroll-url:
+      env: RICKROLL_URL
+      type: string
+      value: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+      description: The URL to which the server will redirect
+
+stack:
+  defines: group
+  members:
+    - rrs/redirect-server
