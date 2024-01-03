@@ -1,0 +1,36 @@
+namespace: rrs
+
+redirect-server:
+  defines: runnable
+  metadata:
+    name: redirect-server
+    description: >-
+      Redirects all traffic to a rickroll video, except for requests from
+      Discord/Slack previews.
+    icon: https://emojiapi.dev/api/v1/link.svg
+  containers:
+    redirect-server:
+      image: registry.local/redirect-server:master-29t1u8
+      build: .
+      dockerfile: Dockerfile
+  services:
+    http-server:
+      description: Port for incoming HTTP traffic
+      container: redirect-server
+      port: 8080
+      host-port: 8080
+      publish: true
+      protocol: tcp
+  connections: {}
+  variables: {}
+
+stack:
+  defines: group
+  members:
+    - rrs/redirect-server
+  metadata:
+    name: simple-redirect-server
+    description: >-
+      A Go application that serves as a simple redirect server, redirecting
+      traffic to a rickroll video, with exceptions for Discord/Slack previews.
+    icon: https://emojiapi.dev/api/v1/link.svg
