@@ -1,0 +1,36 @@
+namespace: rrs
+
+redirect-server:
+  defines: runnable
+  metadata:
+    name: redirect-server
+    description: >-
+      Redirects all traffic to rickroll, with exceptions for Discord/Slack
+      previews.
+    icon: https://emojiapi.dev/api/v1/link.svg
+  containers:
+    redirect-server:
+      image: registry.local/redirect-server:master-c6c9666
+      build: .
+      dockerfile: Dockerfile
+  services:
+    http-server:
+      description: Port for handling incoming HTTP requests
+      container: redirect-server
+      port: 8080
+      host-port: 8080
+      publish: true
+      protocol: tcp
+  connections: {}
+  variables: {}
+
+stack:
+  defines: group
+  members:
+    - rrs/redirect-server
+  metadata:
+    name: rrs
+    description: >-
+      A simple redirect server designed for pranking by redirecting all traffic
+      to a rickroll, with exceptions for Discord/Slack previews.
+    icon: https://emojiapi.dev/api/v1/link.svg
