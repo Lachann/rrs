@@ -1,0 +1,23 @@
+namespace: rrs
+
+redirect-server:
+  defines: runnable
+  metadata:
+    name: redirect-server
+    description: >-
+      A server that redirects traffic to a rickroll, with exceptions for
+      Discord/Slack previews.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    redirect-server:
+      image: env-2015.registry.local/redirect-server:master-82a12b5
+      build: .
+      dockerfile: Dockerfile
+  services: {}
+  connections: {}
+  variables: {}
+
+stack:
+  defines: group
+  members:
+    - rrs/redirect-server
