@@ -1,0 +1,20 @@
+namespace: rrs
+rrs:
+  defines: runnable
+  metadata:
+    name: rrs
+    description: >-
+      A server application that redirects requests to a 'Rickroll' video based
+      on the user-agent
+    icon: https://emojiapi.dev/api/v1/movie_camera.svg
+  containers:
+    rrs:
+      build: .
+  services:
+    default:
+      container: rrs
+      port: 8080
+      host-port: 8080
+      publish: false
+      protocol: TCP
+      description: The port where the server listens for incoming HTTP requests
