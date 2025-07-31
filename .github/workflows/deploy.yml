@@ -9,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: monk test
     container:
       image: monkreleases.azurecr.io/monk-ci:dev
     
@@ -16,11 +17,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Install podman
+      run: |
+        apk update
+        apk add --no-cache podman
+
     - name: Make scripts executable
       run: |
         chmod +x scripts/deploy.sh
         chmod +x scripts/parse-manifest.sh
         chmod +x scripts/build-images.sh
+
 
     - name: Deploy to Monk cluster
       run: ./scripts/deploy.sh
