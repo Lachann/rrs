@@ -66,65 +66,59 @@ build_image() {
     echo "  Dockerfile: $DOCKERFILE_PATH"
     echo "  Context: $BUILD_CONTEXT"
 
-    # Build using docker (GitHub Actions/CircleCI standard)
-    if command -v docker >/dev/null 2>&1; then
-        echo "Using docker for build..."
+    # Build using podman first (better insecure registry support), fallback to docker
+    if command -v podman >/dev/null 2>&1; then
+        echo "Using podman for build..."
+        podman build -t "$tag" -f "$DOCKERFILE_PATH" "$BUILD_CONTEXT"
+        
+        # Push to registry if credentials are provided
+        if [ -n "$REGISTRY_ADDRESS" ] && [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then
+            echo "Tagging and pushing to registry $REGISTRY_ADDRESS..."
+            podman tag "$tag" "$REGISTRY_ADDRESS/$tag"
+            
+            # Use --tls-verify=false for insecure registries (like deploy tool)
+            if podman push --tls-verify=false --creds="$REGISTRY_USERNAME:$REGISTRY_PASSWORD" "$REGISTRY_ADDRESS/$tag"; then
+                echo "Successfully pushed $tag to $REGISTRY_ADDRESS"
+            else
+                echo "Failed to push image to registry"
+                return 1
+            fi
+        else
+            echo "Skipping registry push - missing registry credentials"
+        fi
+    elif command -v docker >/dev/null 2>&1; then
+        echo "Using docker for build (podman not available)..."
+        echo "Note: Docker has limited support for insecure registries in CI/CD environments"
         docker build -t "$tag" -f "$DOCKERFILE_PATH" "$BUILD_CONTEXT"
         
         # Push to registry if credentials are provided
         if [ -n "$REGISTRY_ADDRESS" ] && [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then
             echo "Logging into registry $REGISTRY_ADDRESS..."
             
-            # Try logging in with automatic HTTP fallback for insecure registries
-            REGISTRY_URL="$REGISTRY_ADDRESS"
-            LOGIN_OUTPUT=$(echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_URL" -u "$REGISTRY_USERNAME" --password-stdin 2>&1)
-            LOGIN_RESULT=$?
-            
-            if [ $LOGIN_RESULT -eq 0 ]; then
-                echo "Successfully logged into registry $REGISTRY_URL"
-            elif echo "$LOGIN_OUTPUT" | grep -q "server gave HTTP response to HTTPS client"; then
-                echo "HTTPS failed, trying HTTP for insecure registry..."
-                # Convert HTTPS to HTTP if not already HTTP
-                REGISTRY_URL=$(echo "$REGISTRY_ADDRESS" | sed 's|^https://|http://|' | sed 's|^[^:/]*:|http://&|' | sed 's|^http://http://|http://|')
-                echo "Trying registry URL: $REGISTRY_URL"
+            if echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_ADDRESS" -u "$REGISTRY_USERNAME" --password-stdin; then
+                echo "Successfully logged into registry"
                 
-                if echo "$REGISTRY_PASSWORD" | docker --tlsverify=false login "$REGISTRY_URL" -u "$REGISTRY_USERNAME" --password-stdin; then
-                    echo "Successfully logged into insecure registry $REGISTRY_URL"
-                    REGISTRY_ADDRESS="$REGISTRY_URL"  # Update address for push operations
+                echo "Tagging and pushing to registry..."
+                if docker tag "$tag" "$REGISTRY_ADDRESS/$tag" && docker push "$REGISTRY_ADDRESS/$tag"; then
+                    echo "Successfully pushed $tag to $REGISTRY_ADDRESS"
                 else
-                    echo "Login failed even with HTTP. Check registry credentials and connectivity."
+                    echo "Failed to push image to registry"
+                    echo "For insecure (HTTP) registries, consider installing podman in your CI/CD environment"
+                    docker logout "$REGISTRY_ADDRESS" 2>/dev/null
                     return 1
                 fi
+                
+                docker logout "$REGISTRY_ADDRESS"
             else
-                echo "Login failed: $LOGIN_OUTPUT"
-                echo "Check registry credentials and connectivity"
+                echo "Failed to login to registry"
+                echo "For insecure (HTTP) registries, consider installing podman in your CI/CD environment"
                 return 1
             fi
-            
-            echo "Tagging and pushing to registry..."
-            if docker tag "$tag" "$REGISTRY_ADDRESS/$tag"; then
-                echo "Successfully tagged image"
-            else
-                echo "Failed to tag image"
-                docker logout "$REGISTRY_ADDRESS" 2>/dev/null
-                return 1
-            fi
-            
-            if docker push "$REGISTRY_ADDRESS/$tag"; then
-                echo "Successfully pushed $tag to $REGISTRY_ADDRESS"
-            else
-                echo "Failed to push image to registry"
-                echo "This may be due to an insecure (HTTP) registry or network issues"
-                docker logout "$REGISTRY_ADDRESS" 2>/dev/null
-                return 1
-            fi
-            
-            docker logout "$REGISTRY_ADDRESS"
         else
             echo "Skipping registry push - missing registry credentials"
         fi
     else
-        echo "Error: Docker not found. This script requires Docker to be available."
+        echo "Error: Neither podman nor docker found. Please install one of them."
         return 1
     fi
     
