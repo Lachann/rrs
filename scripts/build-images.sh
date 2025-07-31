@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Image building utility script
 
 if [ -z "$1" ]; then

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # MANIFEST parser utility script
 
 get_images() {
