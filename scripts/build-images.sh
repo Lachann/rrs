@@ -74,12 +74,50 @@ build_image() {
         # Push to registry if credentials are provided
         if [ -n "$REGISTRY_ADDRESS" ] && [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then
             echo "Logging into registry $REGISTRY_ADDRESS..."
-            echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_ADDRESS" -u "$REGISTRY_USERNAME" --password-stdin
+            
+            # Try logging in with automatic HTTP fallback for insecure registries
+            REGISTRY_URL="$REGISTRY_ADDRESS"
+            LOGIN_OUTPUT=$(echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_URL" -u "$REGISTRY_USERNAME" --password-stdin 2>&1)
+            LOGIN_RESULT=$?
+            
+            if [ $LOGIN_RESULT -eq 0 ]; then
+                echo "Successfully logged into registry $REGISTRY_URL"
+            elif echo "$LOGIN_OUTPUT" | grep -q "server gave HTTP response to HTTPS client"; then
+                echo "HTTPS failed, trying HTTP for insecure registry..."
+                # Convert HTTPS to HTTP if not already HTTP
+                REGISTRY_URL=$(echo "$REGISTRY_ADDRESS" | sed 's|^https://|http://|' | sed 's|^[^:/]*:|http://&|' | sed 's|^http://http://|http://|')
+                echo "Trying registry URL: $REGISTRY_URL"
+                
+                if echo "$REGISTRY_PASSWORD" | docker --tlsverify=false login "$REGISTRY_URL" -u "$REGISTRY_USERNAME" --password-stdin; then
+                    echo "Successfully logged into insecure registry $REGISTRY_URL"
+                    REGISTRY_ADDRESS="$REGISTRY_URL"  # Update address for push operations
+                else
+                    echo "Login failed even with HTTP. Check registry credentials and connectivity."
+                    return 1
+                fi
+            else
+                echo "Login failed: $LOGIN_OUTPUT"
+                echo "Check registry credentials and connectivity"
+                return 1
+            fi
             
             echo "Tagging and pushing to registry..."
-            docker tag "$tag" "$REGISTRY_ADDRESS/$tag"
-            docker push "$REGISTRY_ADDRESS/$tag"
-            echo "Successfully pushed $tag to $REGISTRY_ADDRESS"
+            if docker tag "$tag" "$REGISTRY_ADDRESS/$tag"; then
+                echo "Successfully tagged image"
+            else
+                echo "Failed to tag image"
+                docker logout "$REGISTRY_ADDRESS" 2>/dev/null
+                return 1
+            fi
+            
+            if docker push "$REGISTRY_ADDRESS/$tag"; then
+                echo "Successfully pushed $tag to $REGISTRY_ADDRESS"
+            else
+                echo "Failed to push image to registry"
+                echo "This may be due to an insecure (HTTP) registry or network issues"
+                docker logout "$REGISTRY_ADDRESS" 2>/dev/null
+                return 1
+            fi
             
             docker logout "$REGISTRY_ADDRESS"
         else
