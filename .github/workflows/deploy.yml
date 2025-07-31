@@ -1,0 +1,33 @@
+name: Deploy to Monk Cluster
+
+on:
+  push:
+    branches: [ main, master, cicd_test ]
+  pull_request:
+    branches: [ main, master, cicd_test ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: monkreleases.azurecr.io/monk-ci:dev
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Make scripts executable and run them
+      run: |
+        chmod +x scripts/deploy.sh
+        chmod +x scripts/parse-manifest.sh
+        chmod +x scripts/build-images.sh
+        ./scripts/deploy.sh
+      env:
+        MONKCODE: ${{ secrets.MONKCODE }}
+        MONK_TAG: "default"
+        MONK_WORKLOAD: "rrs/stack"
+        MONK_USERNAME: ${{ secrets.MONK_USERNAME }}
+        MONK_PASSWORD: ${{ secrets.MONK_PASSWORD }}
+        REGISTRY_ADDRESS: ${{ secrets.REGISTRY_ADDRESS }}
+        REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+        REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
