@@ -7,9 +7,32 @@ on:
     branches: [ main, master, cicd_test ]
 
 jobs:
-  deploy:
+  build-images:
     runs-on: ubuntu-latest
     environment: monk test
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Make scripts executable
+      run: |
+        chmod +x scripts/parse-manifest.sh
+        chmod +x scripts/build-images.sh
+
+    - name: Build and push images
+      run: ./scripts/build-images.sh
+      env:
+        REGISTRY_ADDRESS: ${{ secrets.REGISTRY_ADDRESS }}
+        REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+        REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+
+  deploy:
+    needs: build-images
+    environment: monk test
+    runs-on: ubuntu-latest
     container:
       image: monkreleases.azurecr.io/monk-ci:dev
     
@@ -17,17 +40,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install podman
-      run: |
-        apk update
-        apk add --no-cache podman
-
     - name: Make scripts executable
       run: |
         chmod +x scripts/deploy.sh
         chmod +x scripts/parse-manifest.sh
-        chmod +x scripts/build-images.sh
-
 
     - name: Deploy to Monk cluster
       run: ./scripts/deploy.sh
@@ -37,6 +53,3 @@ jobs:
         MONK_PASSWORD: ${{ secrets.MONK_PASSWORD }}
         MONK_TAG: "default"
         MONK_WORKLOAD: "rrs/stack"
-        REGISTRY_ADDRESS: ${{ secrets.REGISTRY_ADDRESS }}
-        REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-        REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}

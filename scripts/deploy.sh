@@ -34,33 +34,13 @@ fi
 printf "${GREEN}Authenticating with Monk CLI...${NC}\n"
 monk --nofancy --no-interactive login -u "$MONK_USERNAME" -p "$MONK_PASSWORD"
 
-# Validate registry credentials for image pushing
-if [ -n "$REGISTRY_ADDRESS" ] && [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then
-    printf "${GREEN}Registry credentials found - images will be pushed to $REGISTRY_ADDRESS${NC}\n"
-elif [ -n "$REGISTRY_ADDRESS" ] || [ -n "$REGISTRY_USERNAME" ] || [ -n "$REGISTRY_PASSWORD" ]; then
-    printf "${YELLOW}Warning: Partial registry credentials provided. All three (REGISTRY_ADDRESS, REGISTRY_USERNAME, REGISTRY_PASSWORD) are needed for image pushing${NC}\n"
-fi
-
-# Parse MANIFEST for images that need building
-printf "${GREEN}Analyzing project structure...${NC}\n"
-if [ -f "MANIFEST" ]; then
-    echo "Found MANIFEST file"
-    
-    # Get images from MANIFEST
-    images=$(./scripts/parse-manifest.sh get-images)
-    if [ -n "$images" ]; then
-        printf "${GREEN}Building container images...${NC}\n"
-        for image in $images; do
-            printf "${YELLOW}Building image: $image${NC}\n"
-            ./scripts/build-images.sh "$image"
-        done
-    else
-        echo "No images found in MANIFEST"
-    fi
-else
+# Validate MANIFEST exists
+if [ ! -f "MANIFEST" ]; then
     printf "${RED}Error: MANIFEST file not found${NC}\n"
     exit 1
 fi
+
+printf "${GREEN}Found MANIFEST file, proceeding with deployment...${NC}\n"
 
 # Load MANIFEST using monk with cluster connection
 printf "${GREEN}Loading MANIFEST...${NC}\n"
