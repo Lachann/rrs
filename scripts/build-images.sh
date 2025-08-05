@@ -76,8 +76,8 @@ build_image() {
             echo "Tagging and pushing to registry $REGISTRY_ADDRESS..."
             podman tag "$tag" "$REGISTRY_ADDRESS/$tag"
             
-            # Use --tls-verify=false for insecure registries (like deploy tool)
-            if podman push --tls-verify=false --creds="$REGISTRY_USERNAME:$REGISTRY_PASSWORD" "$REGISTRY_ADDRESS/$tag"; then
+            # Registry now has proper SSL certificates
+            if podman push --creds="$REGISTRY_USERNAME:$REGISTRY_PASSWORD" "$REGISTRY_ADDRESS/$tag"; then
                 echo "Successfully pushed $tag to $REGISTRY_ADDRESS"
             else
                 echo "Failed to push image to registry"
@@ -88,7 +88,6 @@ build_image() {
         fi
     elif command -v docker >/dev/null 2>&1; then
         echo "Using docker for build (podman not available)..."
-        echo "Note: Docker has limited support for insecure registries in CI/CD environments"
         docker build -t "$tag" -f "$DOCKERFILE_PATH" "$BUILD_CONTEXT"
         
         # Push to registry if credentials are provided
