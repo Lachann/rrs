@@ -2,9 +2,9 @@ name: Deploy to Monk Cluster
 
 on:
   push:
-    branches: [ "cicd_test" ]
+    branches: [ "cicd_test", "main", "master" ]
   pull_request:
-    branches: [ "cicd_test" ]
+    branches: [ "cicd_test", "main", "master" ]
 
 jobs:
   build-images:
