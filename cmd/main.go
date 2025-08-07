@@ -19,8 +19,8 @@ var useBackup = os.Getenv("RRS_USE_BACKUP_URL")
 
 // const defaultRickroll = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 // const defaultRickroll = "https://www.youtube.com/watch?v=tae8F4gkfiw"
-const defaultRickroll = "https://www.youtube.com/watch?v=LpNVf8sczqU"
-// const defaultRickroll = "https://www.youtube.com/watch?v=oEtmFgonY3E"
+// const defaultRickroll = "https://www.youtube.com/watch?v=LpNVf8sczqU"
+const defaultRickroll = "https://www.youtube.com/watch?v=oEtmFgonY3E"
 const backupRickroll = "https://www.youtube.com/watch?v=knOXppaqBYY"
 
 func main() {
