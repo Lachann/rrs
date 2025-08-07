@@ -2,14 +2,14 @@ name: Deploy to Monk Cluster
 
 on:
   push:
-    branches: [ "cicd_test", "main", "master" ]
+    branches: [ "cicd_test2", "main", "master" ]
   pull_request:
-    branches: [ "cicd_test", "main", "master" ]
+    branches: [ "cicd_test2", "main", "master" ]
 
 jobs:
   build-images:
     runs-on: ubuntu-latest
-
+    environment: banana
     
     steps:
       - name: Checkout code
@@ -38,7 +38,7 @@ jobs:
   deploy:
     needs: build-images
     runs-on: ubuntu-latest
-
+    environment: banana
     container:
       image: monkreleases.azurecr.io/monk-ci:dev
     
