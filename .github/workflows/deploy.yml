@@ -54,7 +54,6 @@ jobs:
       run: ./scripts/deploy.sh
       env:
         MONKCODE: ${{ secrets.MONKCODE }}
-        MONK_USERNAME: ${{ secrets.MONK_USERNAME }}
-        MONK_PASSWORD: ${{ secrets.MONK_PASSWORD }}
+        MONK_SERVICE_TOKEN: ${{ secrets.MONK_SERVICE_TOKEN }}
         MONK_TAG: "default"
         MONK_WORKLOAD: "rrs/stack"

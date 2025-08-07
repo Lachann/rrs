@@ -25,14 +25,14 @@ if [ -z "$MONK_WORKLOAD" ]; then
     export MONK_WORKLOAD="rrs/stack"
 fi
 
-# Validate and login to Monk CLI
-if [ -z "$MONK_USERNAME" ] || [ -z "$MONK_PASSWORD" ]; then
-    printf "${RED}Error: MONK_USERNAME and MONK_PASSWORD environment variables are required for authentication${NC}\n"
+# Validate service token for authentication
+if [ -z "$MONK_SERVICE_TOKEN" ]; then
+    printf "${RED}Error: MONK_SERVICE_TOKEN environment variable is required for authentication${NC}\n"
     exit 1
 fi
 
-printf "${GREEN}Authenticating with Monk CLI...${NC}\n"
-monk --nofancy --no-interactive login -u "$MONK_USERNAME" -p "$MONK_PASSWORD"
+printf "${GREEN}Using service token for authentication...${NC}\n"
+# Service token authentication is automatic with monk CLI when MONK_SERVICE_TOKEN is set
 
 # Validate MANIFEST exists
 if [ ! -f "MANIFEST" ]; then
