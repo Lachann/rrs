@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: apple
     container:
-      image: monkreleases.azurecr.io/monk-ci:dev
+      image: monkreleases.azurecr.io/monk-ci:latest
     
     steps:
     - name: Checkout code
