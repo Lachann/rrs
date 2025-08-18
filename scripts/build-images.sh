@@ -75,9 +75,7 @@ build_image() {
         if [ -n "$REGISTRY_ADDRESS" ] && [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then
             echo "Tagging and pushing to registry $REGISTRY_ADDRESS..."
             podman tag "$tag" "$REGISTRY_ADDRESS/$tag"
-            
-            # Registry now has proper SSL certificates
-            if podman push --creds="$REGISTRY_USERNAME:$REGISTRY_PASSWORD" "$REGISTRY_ADDRESS/$tag"; then
+            if podman push --tls-verify="${REGISTRY_TLS_VERIFY:-true}" --creds="$REGISTRY_USERNAME:$REGISTRY_PASSWORD" "$REGISTRY_ADDRESS/$tag"; then
                 echo "Successfully pushed $tag to $REGISTRY_ADDRESS"
             else
                 echo "Failed to push image to registry"
