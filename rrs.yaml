@@ -4,7 +4,7 @@ rrs:
   defines: runnable
   metadata:
     name: rrs
-    description: "A simple redirect server for pranking. Redirects all traffic to a rickroll video, except for requests from Discord/Slack preview bots, which are redirected to a different site for link preview purposes."
+    description: "A simple redirect server for pranking. Redirects all traffic to a rickroll video, except for requests from Discord/Slack preview bots, which are redirected to a normal site. Useful for posting links that preview normally in chat apps but rickroll users when clicked."
   containers:
     main:
       image: "rrs:latest"
@@ -20,7 +20,7 @@ rrs:
     use-backup-url:
       type: string
       env: RRS_USE_BACKUP_URL
-      description: Switches the rickroll redirect to a backup URL if set to 'true'.
+      description: "If set to 'true', uses the backup rickroll URL for redirection instead of the default."
       value: false
 
 stack:
