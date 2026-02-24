@@ -64,7 +64,7 @@ else
     sleep 20
 
     printf "${GREEN}Joining cluster via monkcode...${NC}\n"
-    monk cluster join --monkcode "$MONKCODE"
+    monk cluster join --monkcode "$MONKCODE" --local-name "cleanup-runner-$$"
 
     printf "${GREEN}Nuking cluster: $CLUSTER_NAME...${NC}\n"
     monk cluster nuke --force --remove-volumes --remove-snapshots
