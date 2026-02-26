@@ -1,18 +1,14 @@
+# ----------- Build Stage -----------
 FROM golang:1.20-alpine AS builder
-
-RUN apk update && apk add --no-cache git make
-
-WORKDIR $GOPATH/src/github.com/Lachann/rrs
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /rrs ./cmd
 
-RUN CGO_ENABLED=0 make build
-
-FROM scratch
-
-COPY --from=builder /go/src/github.com/Lachann/rrs/dist/rrs /usr/local/bin/rrs
-
-ENTRYPOINT ["/usr/local/bin/rrs"]
-
+# ----------- Run Stage -----------
+FROM alpine:latest
+WORKDIR /
+COPY --from=builder /rrs /rrs
 EXPOSE 8080
-
-
+ENTRYPOINT ["/rrs"]

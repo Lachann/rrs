@@ -1,0 +1,30 @@
+namespace: rrs
+
+rrs:
+  defines: runnable
+  metadata:
+    name: rrs
+    description: "A simple redirect server for pranking. Redirects all traffic to a rickroll video, except for requests from Discord/Slack preview bots, which are redirected to a normal site. Useful for posting links that preview normally in chat apps but rickroll users when clicked."
+  containers:
+    main:
+      image: "rrs:latest"
+  services:
+    http:
+      description: HTTP redirect service for handling all incoming requests and redirecting based on user agent.
+      protocol: tcp
+      port: 8080
+      publish: true
+      host-port: 80
+      container: main
+  variables:
+    use-backup-url:
+      type: string
+      env: RRS_USE_BACKUP_URL
+      description: "If set to 'true', uses the backup rickroll URL for redirection instead of the default."
+      value: false
+
+stack:
+  defines: group
+  members:
+    - rrs/rrs
+
