@@ -363,7 +363,7 @@ printf "${GREEN}Registering cluster in backend...${NC}\n"
 HTTP_CODE=$(curl -s -o /tmp/cluster_response.json -w "%{http_code}" -X POST "$MONK_SUBSCRIPTION_API_BASE/orgs/$MONK_ORG_SLUG/clusters" \
     -H "$AUTH_HEADER" \
     -H "Content-Type: application/json" \
-    -d "{\"clusterId\":\"$CLUSTER_ID\",\"name\":\"$CLUSTER_NAME\",\"monkcode\":\"$MONKCODE\"}")
+    -d "{\"clusterId\":\"$CLUSTER_ID\",\"name\":\"$CLUSTER_NAME\",\"monkcode\":\"$MONKCODE\",\"projectSlug\":\"$MONK_PROJECT_SLUG\"}")
 if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
     printf "${RED}Error: Failed to register cluster in backend (HTTP $HTTP_CODE)${NC}\n"
     cat /tmp/cluster_response.json 2>/dev/null || true
