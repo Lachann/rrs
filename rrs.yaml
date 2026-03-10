@@ -13,15 +13,16 @@ rrs:
       description: HTTP redirect service for handling all incoming requests and redirecting based on user agent.
       protocol: tcp
       port: 8080
-      publish: true
-      host-port: 80
       container: main
+      ingress-routes:
+        main:
+          path-prefix: /
   variables:
     use-backup-url:
       type: string
       env: RRS_USE_BACKUP_URL
       description: "If set to 'true', uses the backup rickroll URL for redirection instead of the default."
-      value: false
+      value: "false"
 
 stack:
   defines: group
