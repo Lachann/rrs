@@ -1,4 +1,4 @@
 REPO rrs
 LOAD rrs.yaml 
 ENTRY rrs/stack
-IMAGE rrs:latest rrs . Dockerfile
+IMAGE rrs:latest rrs/rrs . Dockerfile
