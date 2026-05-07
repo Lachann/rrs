@@ -365,7 +365,7 @@ esac
             --num-instances "$CLOUD_INSTANCE_COUNT" \
             --generate-domain \
             --generate-ssl-cert \
-            $DISK_SIZE_FLAG $DISK_TYPE_FLAG $ZONE_FLAG
+            $DISK_TYPE_FLAG $ZONE_FLAG
 
         # A.5 Extract cluster info
         printf "${GREEN}Extracting cluster information...${NC}\n"
